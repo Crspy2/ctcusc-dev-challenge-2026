@@ -10,7 +10,7 @@ export default async function HomePage() {
     <div>
       <h2 className="mb-4 text-lg font-medium">Restaurants</h2>
       <ul className="space-y-3">
-        {restaurants.map((restaurant) => (
+        {(restaurants || []).map((restaurant) => (
           <li
             key={restaurant.id}
             className="rounded-lg border border-gray-200 bg-white p-4"

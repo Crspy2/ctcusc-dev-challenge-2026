@@ -25,6 +25,7 @@ export const API_URL =
  */
 export async function getRestaurants(): Promise<Restaurant[]> {
   const res = await fetch(`${API_URL}/api/restaurants`, { cache: 'no-store' });
+  console.log(res.status, res.statusText);
   return res.json();
 }
 
