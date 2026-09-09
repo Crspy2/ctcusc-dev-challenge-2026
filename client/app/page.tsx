@@ -1,10 +1,11 @@
-import { getRestaurants } from '@/lib/apiClient';
+import { getRestaurants, getVisits } from '@/lib/apiClient';
 
 // Server component. Fetches restaurants on each request and renders a plain
 // list. There is no loading state, no empty state, and no error handling: if
 // the API is down or returns something unexpected, this throws.
 export default async function HomePage() {
   const restaurants = await getRestaurants();
+  const visits = await getVisits();
 
   return (
     <div>
@@ -21,8 +22,13 @@ export default async function HomePage() {
                 {restaurant.rating} <span className="text-amber-400 text-xl">★</span>
               </span>
             </div>
-            <div className="mt-1 text-sm text-gray-600">
-              {restaurant.cuisine} {restaurant.cuisine != null && "·"} {restaurant.address == null ? "No Address" : restaurant.address}
+            <div className="flex justify-between mt-1 text-sm text-gray-600">
+              <div className="mt-1 text-sm text-gray-600">
+                {restaurant.cuisine} {restaurant.cuisine != null && "·"} {restaurant.address == null ? "No Address" : restaurant.address}
+              </div>
+              <a href={`/${restaurant.id}`}>
+                  {visits.filter(v => v.restaurantId == restaurant.id).length} visits
+              </a>
             </div>
           </li>
         ))}
