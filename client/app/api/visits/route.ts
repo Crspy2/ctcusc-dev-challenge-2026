@@ -1,14 +1,28 @@
 import { NextResponse } from 'next/server'
 import { pool } from '@/db/pool'
-import { ValidationError, handleError } from '@/lib/errors'
+import {ValidationError, handleError, NotFoundError} from '@/lib/errors'
 import { toVisit } from '@/lib/types'
-import { parseVisitBody } from "@/lib/validation"
+import { parseVisitBody, parseVisitID } from "@/lib/validation"
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
+    const { searchParams } = new URL(req.url)
+    const restaurantIdParam = searchParams.get('restaurantId')
+    const filtering = restaurantIdParam !== null
+    let rid: number | undefined
+    if (filtering) {
+      rid = Number(restaurantIdParam)
+      if (!Number.isInteger(rid) || rid < 1) {
+        throw new ValidationError("\"restaurantId\" must be an integer")
+      }
+    }
     const { rows: visits } = await pool.query(
-      'SELECT * FROM visits ORDER BY created_at DESC'
+        filtering
+            ? 'SELECT * FROM visits WHERE "restaurantId" = $1 ORDER BY created_at DESC'
+            : 'SELECT * FROM visits ORDER BY created_at DESC',
+        filtering ? [rid] : []
     )
+
     return NextResponse.json(visits.map(toVisit))
   } catch (err) {
     return handleError(err)
