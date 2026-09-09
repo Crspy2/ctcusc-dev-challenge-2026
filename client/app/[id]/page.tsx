@@ -2,7 +2,7 @@ import { getRestaurant, getVisits } from '@/lib/apiClient'
 
 export default async function HomePage({ params }: { params: { id: string } }) {
     const restaurant = await getRestaurant(params.id)
-    if (!!(restaurant as { error: string}).error) return (
+    if (!!(restaurant as unknown as { error: string }).error) return (
         <div className="flex flex-col gap-y-4 justify-center items-center">
             <span className="text-red-500 text-3xl font-semibold">Restaurant does not exist</span>
             <a href="/" className="bg-green-500 text-white px-4 py-1.5 rounded-lg">Back to restaurant listing</a>
