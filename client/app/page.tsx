@@ -18,11 +18,11 @@ export default async function HomePage() {
             <div className="flex items-baseline justify-between">
               <span className="font-medium">{restaurant.name}</span>
               <span className="text-sm text-gray-500">
-                {restaurant.rating}★
+                {restaurant.rating} <span className="text-amber-400 text-xl">★</span>
               </span>
             </div>
             <div className="mt-1 text-sm text-gray-600">
-              {restaurant.cuisine} · {restaurant.address}
+              {restaurant.cuisine} {restaurant.cuisine != null && "·"} {restaurant.address == null ? "No Address" : restaurant.address}
             </div>
           </li>
         ))}
