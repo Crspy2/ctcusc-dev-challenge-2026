@@ -33,7 +33,7 @@ export async function PATCH(req: Request, { params }: Params) {
 
     const { notes } = body as Record<string, unknown>
     if (typeof notes !== "string" || notes.trim() === "") {
-      throw new ValidationError("\"notes\" is required and must be a string")
+      throw new ValidationError('"notes" is required and must be a string')
     }
     const { rows: visits } = await pool.query("UPDATE visits SET notes=$2 WHERE id=$1 RETURNING *;", [id, notes])
 

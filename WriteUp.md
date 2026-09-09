@@ -18,17 +18,15 @@ I opted to not include a `DELETE` endpoint for visits, since a visit is a histor
 shouldn't be able to undo them.
 
 When adding the `?restaurantId` query parameter to the `GET /api/visits` route handler, I didn't reuse the `parseVisitID()`
-function used on other routes, since it throws a `NotFoundError`. On this route in specific, we want invalid restaurantIds
-to throw a `Validation` error. I opted for an error instead of silent failing (returning empty array) because if the query
-parameter is explicitly added, then whoever made the call likely wants to filter, and they should know their restaurant Id
-doesn't exist.
+function used on other routes, since it throws a `NotFoundError` (our route was found, but the query parameter is not correct). On this route in specific, we want to prioritize listing
+visits over the filtering, so as long as `?restaurantId` is a valid integer that could potentially be a `SERIAL`, we can 
+continue with our SQL query. Our goal with the parsing for that query parameter is just to ensure that the datatype is correct.
 
 ## 3. Where did you cut corners?
 Originally, I wanted to add a form to log visits, but I ran out of time. I created helper functions for this in 
 `apiClient.ts`, but they aren't being used. If I were to create this form, I would have used React `useState` hooks to 
-track responses and loading states and the `onSubmit` event handler on `<form>` to call a function that inturn calls the 
-API endpoint. If server actions were allowed, I would have either used `<form action=...>` syntax in a server component or 
-the `useFormAction` hook in a client component.
+track responses and loading states and the `onSubmit` event handler on `<form>` to call a function that in turn calls the 
+API endpoint. If server actions were allowed, I would have also considered setting an action on a `<form>` in a server component.
 
 I also thought of adding a rating system so the ratings shown for restaurants could be pulled from actual ratings instead
 of a db column. I did not have time for this, and ended up focusing on the visit API and server rendered page instead of a
@@ -87,8 +85,44 @@ instead of numbers, etc...).
 
 ![postman.png](postman.png)
 
+**Part A** - the contract table in CHALLENGE.md, every row including the error
+cases:
+
+```bash
+# e.g.
+curl -i http://localhost:3000/api/restaurants          # 200 + array
+curl -i http://localhost:3000/api/restaurants/99999    # 404
+curl -i http://localhost:3000/api/restaurants/abc      # 404
+curl -i -X POST http://localhost:3000/api/restaurants \
+  -H 'Content-Type: application/json' \
+  -d '{"name":"Out Of Range","rating":6}'              # 400
+```
+
+**Part B** - the equivalent cases for what you built:
+
+```bash
+curl -i http://localhost:3000/api/visits                             # 200 + array
+curl -i http://localhost:3000/api/visits?restaurantId=1              # 200 + array
+curl -i http://localhost:3000/api/visits?restaurantId=a2             # 400
+curl -i http://localhost:3000/api/visits/99999                       # 404
+curl -i http://localhost:3000/api/visits/abc                         # 404
+curl -i -X POST http://localhost:3000/api/visits \
+  -H 'Content-Type: application/json' \
+  -d '{"restaurantId":-1,"date": "04-12-3000","amountSpent": 0}'     # 400
+curl -i -X POST http://localhost:3000/api/visits \
+  -H 'Content-Type: application/json' \
+  -d '{"restaurantId":1,"date": "2026-09-09","amountSpent": 38.42}' # 201
+curl -i -X PATCH http://localhost:3000/api/visits/1 \
+  -H 'Content-Type: application/json' \
+  -d '{"notes": ""}'                                                 # 400
+curl -i -X PATCH http://localhost:3000/api/visits/1 \
+  -H 'Content-Type: application/json' \
+  -d '{"notes": "test"}'                                             # 200
+```
 
 ## Known issues / what I'd do next
 - The `PATCH /api/visits/{id}` endpoint requires a note field, but the current check throws a `ValidationError` if an 
 empty string is passed. This means we can't clear a note for a visit, which should be supported since the database column
 is not `NOT NULL`.
+- Add a check for the `?restaurantId` query parameter to check whether the restaurantId exists. This can be done just by 
+`SELECT 1 FROM restaurants where id = $1`, but as mentioned earlier, I opted to not check for this.

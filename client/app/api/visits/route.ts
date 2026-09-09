@@ -13,7 +13,7 @@ export async function GET(req: Request) {
     if (filtering) {
       rid = Number(restaurantIdParam)
       if (!Number.isInteger(rid) || rid < 1) {
-        throw new ValidationError("\"restaurantId\" must be an integer")
+        throw new ValidationError('"restaurantId" must be an integer')
       }
     }
     const { rows: visits } = await pool.query(
@@ -38,7 +38,7 @@ export async function POST(req: Request) {
     // make pool call instead of calling `getRestaurant(id: number)` to avoid http errors
     const { rows: restaurants } = await pool.query('SELECT 1 FROM restaurants WHERE id = $1', [restaurantId])
     if (restaurants.length === 0) {
-      throw new ValidationError("\"restaurantId\" is not a valid restaurant")
+      throw new ValidationError('"restaurantId" is not a valid restaurant')
     }
     const { rows: visits } = await pool.query('INSERT INTO visits ("restaurantId", date, "amountSpent", notes) VALUES ($1, $2, $3, $4) RETURNING *;', [restaurantId, date, amountSpent, notes])
 
