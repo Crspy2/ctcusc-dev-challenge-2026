@@ -8,7 +8,8 @@
  * The shapes these helpers return live in `lib/types.ts`, shared with the
  * handlers that produce them.
  */
-import type { Restaurant } from './types';
+import type { Restaurant, Visit } from './types';
+import { VisitBody } from "@/lib/validation";
 
 // We read a base URL from the environment because Server Components fetch on
 // the server, where relative URLs don't resolve - so we need an absolute origin.
@@ -25,6 +26,7 @@ export const API_URL =
  */
 export async function getRestaurants(): Promise<Restaurant[]> {
   const res = await fetch(`${API_URL}/api/restaurants`, { cache: 'no-store' });
+  console.log(res.status, res.statusText);
   return res.json();
 }
 
@@ -33,5 +35,21 @@ export async function getRestaurants(): Promise<Restaurant[]> {
  */
 export async function getRestaurant(id: number | string): Promise<Restaurant> {
   const res = await fetch(`${API_URL}/api/restaurants/${id}`, { cache: 'no-store' });
+  return res.json();
+}
+
+
+export async function getVisits(restaurantId?: number): Promise<Visit[]> {
+  const res = await fetch(`${API_URL}/api/visits${typeof restaurantId === "number" ? `?restaurantId=${restaurantId}` : ""}`, { cache: 'no-store' });
+  return res.json();
+}
+
+export async function logVisit(body: VisitBody): Promise<Visit> {
+  const res = await fetch(`${API_URL}/api/visits`, { method: "POST", cache: 'no-store', body: JSON.stringify(body) });
+  return res.json();
+}
+
+export async function patchVisit(id: number, notes: string): Promise<Visit> {
+  const res = await fetch(`${API_URL}/api/visits/${id}`, { method: "PATCH", cache: 'no-store', body: JSON.stringify({ notes }) });
   return res.json();
 }
