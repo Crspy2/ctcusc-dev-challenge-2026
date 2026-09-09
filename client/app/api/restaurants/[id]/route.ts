@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { pool } from '@/db/pool';
-import { handleError } from '@/lib/errors';
+import { NotFoundError, handleError } from '@/lib/errors';
 import { toRestaurant } from '@/lib/types';
 import { parseRestaurantBody, parseRestaurantID } from "@/lib/validation";
 
@@ -18,9 +18,7 @@ export async function GET(_req: Request, { params }: Params) {
       [id]
     );
 
-    if (rows.length === 0) {
-      return NextResponse.json({ error: 'Restaurant not found' }, { status: 404 });
-    }
+    if (rows.length === 0) throw new NotFoundError("Restaurant not found");
 
     return NextResponse.json(toRestaurant(rows[0]));
   } catch (err) {
@@ -42,9 +40,7 @@ export async function PUT(req: Request, { params }: Params) {
     const { name, address, cuisine, rating } = parseRestaurantBody(body)
     const { rows } = await pool.query("UPDATE restaurants SET name=$2, cuisine=$3, address=$4, rating=$5 WHERE id=$1 RETURNING *;", [id, name, cuisine, address, rating])
 
-    if (rows.length === 0) {
-      return NextResponse.json({ error: "Restaurant not found" }, { status: 404 });
-    }
+    if (rows.length === 0) throw new NotFoundError("Restaurant not found");
 
     return NextResponse.json(toRestaurant(rows[0]), { status: 200 })
   } catch (err) {
@@ -68,9 +64,7 @@ export async function DELETE(_req: Request, { params }: Params) {
     const id = parseRestaurantID(params.id)
     const { rows } = await pool.query("DELETE FROM restaurants WHERE id=$1 RETURNING *;", [id])
 
-    if (rows.length === 0) {
-      return NextResponse.json({ error: "Restaurant not found" }, { status: 404 });
-    }
+    if (rows.length === 0) throw new NotFoundError("Restaurant not found");
 
     return new NextResponse(null, { status: 204 })
   } catch (err) {

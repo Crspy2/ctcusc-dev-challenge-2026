@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { pool } from '@/db/pool'
-import { ValidationError, handleError } from '@/lib/errors'
+import { NotFoundError, ValidationError, handleError} from '@/lib/errors'
 import { toVisit } from '@/lib/types'
 import { parseVisitID } from "@/lib/validation"
 
@@ -14,9 +14,7 @@ export async function GET(_req: Request, { params }: Params) {
       [id]
     );
 
-    if (visits.length === 0) {
-      return NextResponse.json({ error: 'Visit not found' }, { status: 404 });
-    }
+    if (visits.length === 0) throw new NotFoundError("Visit not found");
 
     return NextResponse.json(toVisit(visits[0]));
   } catch (err) {
@@ -39,9 +37,7 @@ export async function PATCH(req: Request, { params }: Params) {
     }
     const { rows: visits } = await pool.query("UPDATE visits SET notes=$2 WHERE id=$1 RETURNING *;", [id, notes])
 
-    if (visits.length === 0) {
-      return NextResponse.json({ error: "Visit not found" }, { status: 404 });
-    }
+    if (visits.length === 0) throw new NotFoundError("Visit not found");
 
     return NextResponse.json(toVisit(visits[0]), { status: 200 })
   } catch (err) {
