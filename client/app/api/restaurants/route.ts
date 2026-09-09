@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { pool } from '@/db/pool';
 import { handleError } from '@/lib/errors';
 import { toRestaurant } from '@/lib/types';
-import {parseRestaurantBody} from "@/lib/validation";
+import { parseRestaurantBody } from "@/lib/validation";
 
 /**
  * GET /api/restaurants
@@ -13,9 +13,6 @@ export async function GET() {
     const { rows } = await pool.query(
       'SELECT * FROM restaurants ORDER BY created_at DESC'
     );
-
-    // Map every row - raw rows don't match the contract (NUMERIC comes back
-    // as a string, timestamps as Date objects). See lib/types.ts.
     return NextResponse.json(rows.map(toRestaurant));
   } catch (err) {
     return handleError(err);

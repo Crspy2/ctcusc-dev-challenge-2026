@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { pool } from '@/db/pool';
 import { handleError } from '@/lib/errors';
 import { toRestaurant } from '@/lib/types';
-import {parseRestaurantBody, parseRestaurantID} from "@/lib/validation";
+import { parseRestaurantBody, parseRestaurantID } from "@/lib/validation";
 
 type Params = { params: { id: string } };
 
